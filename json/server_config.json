@@ -1,0 +1,60 @@
+{
+  "server": {
+    "name": "骑士英雄游戏服务器",
+    "version": "0.1.0",
+    "description": "Knight Hero Game Server Configuration",
+    "author": "lx",
+    "date": "2025-06-18"
+  },
+  "services": {
+    "gateway": {
+      "host": "0.0.0.0",
+      "port": 8001,
+      "websocket_port": 8002,
+      "max_connections": 10000
+    },
+    "logic": {
+      "host": "0.0.0.0",
+      "port": 8003,
+      "max_workers": 50
+    },
+    "chat": {
+      "host": "0.0.0.0",
+      "port": 8004,
+      "max_channels": 100,
+      "max_history": 1000
+    },
+    "fight": {
+      "host": "0.0.0.0",
+      "port": 8005,
+      "tick_rate": 20,
+      "max_battles": 500
+    }
+  },
+  "database": {
+    "mongodb": {
+      "url": "mongodb://localhost:27017",
+      "database": "knight_hero",
+      "pool_size": 100
+    },
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "db": 0,
+      "max_connections": 100
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "logs/server.log",
+    "max_size": "10MB",
+    "backup_count": 5
+  },
+  "game": {
+    "max_players_per_room": 10,
+    "heartbeat_interval": 30,
+    "reconnect_timeout": 60,
+    "max_level": 100
+  }
+}
