@@ -13,6 +13,15 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 
+# 需要从额外字段中排除的标准日志记录属性
+EXCLUDED_RECORD_ATTRIBUTES = {
+    "name", "msg", "args", "levelname", "levelno", "pathname", "filename",
+    "module", "lineno", "funcName", "created", "msecs", "relativeCreated",
+    "thread", "threadName", "processName", "process", "getMessage", "exc_info",
+    "exc_text", "stack_info", "taskName", "asctime", "message"
+}
+
+
 class JSONFormatter(logging.Formatter):
     """JSON格式日志格式化器"""
     
