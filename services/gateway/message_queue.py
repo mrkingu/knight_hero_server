@@ -331,7 +331,8 @@ class PriorityMessageQueue:
             出队的消息，超时或队列为空返回None
         """
         try:
-            async with asyncio.wait_for(self._not_empty.acquire(), timeout):
+            # 等待队列不为空
+            async with self._not_empty:
                 while not self._heap:
                     await asyncio.wait_for(self._not_empty.wait(), timeout)
                 

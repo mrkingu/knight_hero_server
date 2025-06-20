@@ -249,7 +249,8 @@ class TestMessageHandlers:
         # 测试业务消息分类
         business_msg = Mock()
         business_msg.type = ""
-        business_msg.msg_id = 1001
+        business_msg.msg_id = 2001  # 使用聊天服务消息ID
+        business_msg.MESSAGE_TYPE = 2001  # Add this attribute for the categorization logic
         
         category = handler._categorize_message(business_msg)
         assert category == MessageCategory.BUSINESS
@@ -297,7 +298,7 @@ class TestIntegration:
         handler = UnifiedMessageHandler(dispatcher)
         
         # 注册服务实例
-        instance = ServiceInstance("logic", "logic-1", "127.0.0.1", 50001)
+        instance = ServiceInstance("chat", "chat-1", "127.0.0.1", 50001)
         router.register_service_instance(instance)
         
         # 模拟连接和会话
@@ -309,11 +310,15 @@ class TestIntegration:
         
         # 创建业务消息
         message = BaseRequest()
-        message.msg_id = 1001  # 逻辑服务消息
+        message.msg_id = 2001  # 聊天服务消息
+        message.MESSAGE_TYPE = 2001  # 添加这个属性用于分类
         message.player_id = "test_player"
         
         # 处理消息
         await handler.handle_message(mock_connection, mock_session, message)
+        
+        # 给异步操作一点时间
+        await asyncio.sleep(0.1)
         
         # 验证消息进入队列
         assert queue.size() > 0

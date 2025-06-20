@@ -35,6 +35,12 @@ class GatewayApp:
         self.session_manager = None
         self._shutdown_event = asyncio.Event()
         self._running = False
+        
+        # 消息路由系统组件
+        self._message_router = None
+        self._message_queue = None
+        self._message_dispatcher = None
+        self._unified_handler = None
     
     async def initialize(self) -> bool:
         """
@@ -63,6 +69,9 @@ class GatewayApp:
             )
             self.session_manager = await get_session_manager(session_config)
             
+            # 初始化消息路由系统
+            await self._initialize_routing_system()
+            
             # 创建FastAPI应用
             self.app = self._create_app()
             
@@ -73,6 +82,40 @@ class GatewayApp:
             print(f"Gateway应用初始化失败: {e}")
             return False
     
+    async def _initialize_routing_system(self) -> None:
+        """初始化消息路由系统"""
+        try:
+            from .router import MessageRouter
+            from .message_queue import PriorityMessageQueue
+            from .message_dispatcher import MessageDispatcher
+            from .handlers import UnifiedMessageHandler
+            
+            # 创建路由系统组件
+            self._message_router = MessageRouter()
+            self._message_queue = PriorityMessageQueue(
+                max_size=10000,
+                enable_deduplication=True,
+                enable_backpressure=True
+            )
+            self._message_dispatcher = MessageDispatcher(
+                self._message_router,
+                self._message_queue
+            )
+            self._unified_handler = UnifiedMessageHandler(self._message_dispatcher)
+            
+            # 启动消息分发器
+            await self._message_dispatcher.start()
+            
+            print("消息路由系统初始化成功")
+            
+        except Exception as e:
+            print(f"消息路由系统初始化失败: {e}")
+            # 不抛出异常，允许系统降级到原有处理方式
+            self._message_router = None
+            self._message_queue = None
+            self._message_dispatcher = None
+            self._unified_handler = None
+    
     async def shutdown(self) -> None:
         """关闭应用"""
         print("开始关闭Gateway应用...")
@@ -82,6 +125,11 @@ class GatewayApp:
         self._shutdown_event.set()
         
         try:
+            # 关闭消息路由系统
+            if self._message_dispatcher:
+                await self._message_dispatcher.stop()
+                print("消息路由系统已关闭")
+            
             # 关闭会话管理器
             if self.session_manager:
                 await close_session_manager()
@@ -123,6 +171,29 @@ class GatewayApp:
         
         # 注册路由
         self._register_routes(app)
+        
+        # 添加路由系统状态端点
+        @app.get("/routing/stats")
+        async def get_routing_stats():
+            """获取路由系统统计信息"""
+            if not self._message_router or not self._message_dispatcher or not self._unified_handler:
+                return JSONResponse({
+                    "status": "disabled",
+                    "message": "路由系统未启用"
+                })
+            
+            try:
+                stats = {
+                    "router": self._message_router.get_route_stats(),
+                    "queue": self._message_queue.get_stats(),
+                    "dispatcher": self._message_dispatcher.get_dispatch_stats(),
+                    "handlers": self._unified_handler.get_handler_stats()
+                }
+                return JSONResponse(stats)
+            except Exception as e:
+                return JSONResponse({
+                    "error": f"获取统计信息失败: {e}"
+                }, status_code=500)
         
         return app
     
@@ -234,7 +305,7 @@ class GatewayApp:
     
     async def _handle_message(self, connection, session, message) -> None:
         """
-        处理单个消息
+        处理单个消息 - 现在使用新的路由系统
         
         Args:
             connection: 连接对象
@@ -242,36 +313,12 @@ class GatewayApp:
             message: 消息对象
         """
         try:
-            # 更新会话活跃时间
-            session.update_activity()
-            
-            # 根据消息类型处理
-            if message.type == "ping":
-                # 处理ping消息
-                await connection.send_dict({
-                    "type": "pong",
-                    "timestamp": asyncio.get_event_loop().time()
-                }, "pong")
-                
-            elif message.type == "auth":
-                # 处理认证消息
-                await self._handle_auth_message(connection, session, message)
-                
-            elif message.type == "heartbeat":
-                # 处理心跳消息
-                session.update_ping()
-                await connection.send_dict({
-                    "type": "heartbeat_ack",
-                    "timestamp": asyncio.get_event_loop().time()
-                })
-                
-            elif message.type == "chat":
-                # 处理聊天消息（示例）
-                await self._handle_chat_message(connection, session, message)
-                
+            # 使用新的统一消息处理器
+            if hasattr(self, '_unified_handler'):
+                await self._unified_handler.handle_message(connection, session, message)
             else:
-                # 其他消息类型
-                await self._handle_generic_message(connection, session, message)
+                # 兼容原有处理逻辑 (如果路由系统未初始化)
+                await self._handle_message_legacy(connection, session, message)
                 
         except Exception as e:
             print(f"处理消息时发生错误: {e}")
@@ -280,6 +327,46 @@ class GatewayApp:
                 "message": "消息处理失败",
                 "error_code": "MESSAGE_PROCESSING_ERROR"
             })
+    
+    async def _handle_message_legacy(self, connection, session, message) -> None:
+        """
+        原有的消息处理逻辑 (兼容)
+        
+        Args:
+            connection: 连接对象
+            session: 会话对象
+            message: 消息对象
+        """
+        # 更新会话活跃时间
+        session.update_activity()
+        
+        # 根据消息类型处理
+        if message.type == "ping":
+            # 处理ping消息
+            await connection.send_dict({
+                "type": "pong",
+                "timestamp": asyncio.get_event_loop().time()
+            }, "pong")
+            
+        elif message.type == "auth":
+            # 处理认证消息
+            await self._handle_auth_message(connection, session, message)
+            
+        elif message.type == "heartbeat":
+            # 处理心跳消息
+            session.update_ping()
+            await connection.send_dict({
+                "type": "heartbeat_ack",
+                "timestamp": asyncio.get_event_loop().time()
+            })
+            
+        elif message.type == "chat":
+            # 处理聊天消息（示例）
+            await self._handle_chat_message(connection, session, message)
+            
+        else:
+            # 其他消息类型
+            await self._handle_generic_message(connection, session, message)
     
     async def _handle_auth_message(self, connection, session, message) -> None:
         """
