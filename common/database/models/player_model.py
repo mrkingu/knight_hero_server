@@ -7,7 +7,6 @@
 from typing import Dict, Any, Optional
 from enum import IntEnum
 from pydantic import BaseModel, Field
-from .base_document import BaseDocument
 
 class VIPLevel(IntEnum):
     """VIP等级枚举"""
@@ -23,7 +22,7 @@ class VIPLevel(IntEnum):
     V9 = 9
     V10 = 10
 
-class Player(BaseDocument):
+class Player(BaseModel):
     """玩家数据模型"""
     
     # 基础信息
@@ -44,9 +43,39 @@ class Player(BaseDocument):
     # 状态信息
     last_login: Optional[str] = Field(default=None, description="最后登录时间")
     online_status: bool = Field(default=False, description="在线状态")
+
+# For production use with MongoDB, create a separate Beanie Document
+try:
+    from .base_document import BaseDocument
     
-    class Settings:
-        collection = "players"
+    class PlayerDocument(BaseDocument):
+        """玩家数据库文档（用于生产环境）"""
+        
+        # 基础信息
+        player_id: str = Field(..., description="玩家ID")
+        nickname: str = Field(..., description="昵称")
+        level: int = Field(default=1, description="等级")
+        exp: int = Field(default=0, description="经验值")
+        
+        # 货币资源（支持并发操作的字段）
+        diamond: int = Field(default=0, description="钻石")
+        gold: int = Field(default=0, description="金币")
+        energy: int = Field(default=100, description="体力")
+        
+        # VIP信息
+        vip_level: VIPLevel = Field(default=VIPLevel.V0, description="VIP等级")
+        vip_exp: int = Field(default=0, description="VIP经验")
+        
+        # 状态信息
+        last_login: Optional[str] = Field(default=None, description="最后登录时间")
+        online_status: bool = Field(default=False, description="在线状态")
+        
+        class Settings:
+            collection = "players"
+            
+except ImportError:
+    # Fallback if Beanie is not available
+    PlayerDocument = Player
 
 def get_concurrent_fields(model_class) -> Dict[str, Dict[str, Any]]:
     """
