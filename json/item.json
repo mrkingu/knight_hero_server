@@ -1,0 +1,32 @@
+{
+  "1001": {
+    "item_id": 1001,
+    "name": "小血瓶",
+    "type": 1,
+    "quality": 1,
+    "price": 100,
+    "description": "恢复100点生命值",
+    "max_stack": 10,
+    "level_requirement": 1
+  },
+  "1002": {
+    "item_id": 1002,
+    "name": "大血瓶",
+    "type": 1,
+    "quality": 2,
+    "price": 200,
+    "description": "恢复300点生命值",
+    "max_stack": 10,
+    "level_requirement": 5
+  },
+  "1003": {
+    "item_id": 1003,
+    "name": "魔法药水",
+    "type": 2,
+    "quality": 2,
+    "price": 150,
+    "description": "恢复200点魔法值",
+    "max_stack": 5,
+    "level_requirement": 3
+  }
+}
