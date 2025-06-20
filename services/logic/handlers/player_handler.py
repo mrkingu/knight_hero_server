@@ -27,11 +27,11 @@ logger = logging.getLogger(__name__)
 class PlayerHandler(BaseHandler):
     """玩家相关请求处理器"""
     
-    def __init__(self):
+    def __init__(self, player_service: Optional[PlayerService] = None, rank_service: Optional[RankService] = None):
         """初始化玩家处理器"""
         super().__init__()
-        self.player_service = PlayerService()
-        self.rank_service = RankService()
+        self.player_service = player_service or PlayerService()
+        self.rank_service = rank_service or RankService()
         
         # 在线玩家缓存
         self.online_players: Dict[str, Dict[str, Any]] = {}
