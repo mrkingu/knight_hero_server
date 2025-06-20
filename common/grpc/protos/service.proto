@@ -1,0 +1,23 @@
+syntax = "proto3";
+package game.grpc;
+
+// 通用RPC请求
+message RpcRequest {
+  string service_name = 1;
+  string method_name = 2;
+  bytes payload = 3;
+  map<string, string> metadata = 4;
+}
+
+// 通用RPC响应
+message RpcResponse {
+  int32 code = 1;
+  string message = 2;
+  bytes payload = 3;
+}
+
+// 定义通用服务
+service GameService {
+  rpc Call(RpcRequest) returns (RpcResponse);
+  rpc StreamCall(stream RpcRequest) returns (stream RpcResponse);
+}
