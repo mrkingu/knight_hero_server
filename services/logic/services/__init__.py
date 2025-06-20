@@ -9,6 +9,14 @@ Logic Service Business Logic Module
 
 from .player_service import PlayerService
 
-__all__ = [
-    'PlayerService'
-]
+# Import IoC version
+try:
+    from .player_service_ioc import PlayerService as PlayerServiceIoC
+    __all__ = [
+        'PlayerService',
+        'PlayerServiceIoC'
+    ]
+except ImportError:
+    __all__ = [
+        'PlayerService'
+    ]

@@ -10,9 +10,20 @@ Logic Service Handlers Module
 from .base_handler import BaseHandler, handler, register_handler_class
 from .player_handler import PlayerHandler
 
-__all__ = [
-    'BaseHandler',
-    'handler', 
-    'register_handler_class',
-    'PlayerHandler'
-]
+# Import IoC version
+try:
+    from .player_handler_ioc import PlayerHandler as PlayerHandlerIoC
+    __all__ = [
+        'BaseHandler',
+        'handler', 
+        'register_handler_class',
+        'PlayerHandler',
+        'PlayerHandlerIoC'
+    ]
+except ImportError:
+    __all__ = [
+        'BaseHandler',
+        'handler', 
+        'register_handler_class',
+        'PlayerHandler'
+    ]
