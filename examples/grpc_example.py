@@ -174,12 +174,12 @@ async def run_client_example():
                 print(f"不存在玩家信息: {invalid_info}")
             except Exception as e:
                 print(f"预期的错误: {e}")
-        
-        # 6. 测试客户端统计
-        print("\n6. 客户端统计信息:")
-        stats = client.get_stats()
-        print(f"调用统计: {stats['client_stats']}")
-        print(f"熔断器状态: {stats['circuit_breaker_stats']['state']}")
+            
+            # 6. 测试客户端统计
+            print("\n6. 客户端统计信息:")
+            stats = client.get_stats()
+            print(f"调用统计: {stats['client_stats']}")
+            print(f"熔断器状态: {stats['circuit_breaker_stats']['state']}")
         
     except Exception as e:
         print(f"客户端示例失败: {e}")
