@@ -201,7 +201,7 @@ class ConfigClassGenerator:
                 lines.append(f'    {field_name}: {field_type} = Field(description="{field_desc}")')
                 
         lines.append('')
-        return '\n'.join(lines)
+        return os.linesep.join(lines)
         
     def _to_pascal_case(self, snake_str: str) -> str:
         """将下划线命名转换为帕斯卡命名
