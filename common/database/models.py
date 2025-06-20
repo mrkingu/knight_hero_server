@@ -56,15 +56,15 @@ class Player(Document):
     device_id: Optional[str] = Field(None, description="设备ID")
     platform: Optional[str] = Field(None, description="平台")
     
-    @validator('nickname')
+    @validator('nickname', pre=True)
     def validate_nickname(cls, v):
         """验证昵称"""
-        if not v or not v.strip():
+        if not v or not str(v).strip():
             raise ValueError('昵称不能为空')
         # 这里可以添加更多验证逻辑，如敏感词过滤
-        return v.strip()
+        return str(v).strip()
     
-    @validator('max_stage')
+    @validator('max_stage', pre=True)
     def validate_max_stage(cls, v, values):
         """验证最高关卡不能小于当前关卡"""
         current_stage = values.get('current_stage', 1)
