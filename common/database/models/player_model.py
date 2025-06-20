@@ -1,94 +1,49 @@
 """
 玩家数据模型
-定义玩家的所有属性和并发字段
-作者: lx
+纯数据定义，不包含任何业务逻辑
+作者: mrkingu
 日期: 2025-06-20
 """
-from typing import Dict, Any, Optional
-from enum import IntEnum
-from pydantic import BaseModel, Field
+from pydantic import Field
+from typing import Dict, List, Optional
+from datetime import datetime
+from .base_document import BaseDocument
 
-class VIPLevel(IntEnum):
-    """VIP等级枚举"""
-    V0 = 0
-    V1 = 1
-    V2 = 2
-    V3 = 3
-    V4 = 4
-    V5 = 5
-    V6 = 6
-    V7 = 7
-    V8 = 8
-    V9 = 9
-    V10 = 10
-
-class Player(BaseModel):
+class PlayerModel(BaseDocument):
     """玩家数据模型"""
     
     # 基础信息
-    player_id: str = Field(..., description="玩家ID")
+    player_id: str = Field(..., description="玩家ID", index=True)
+    account_id: str = Field(..., description="账号ID", index=True)
     nickname: str = Field(..., description="昵称")
-    level: int = Field(default=1, description="等级")
-    exp: int = Field(default=0, description="经验值")
+    avatar: str = Field(default="", description="头像")
     
-    # 货币资源（支持并发操作的字段）
-    diamond: int = Field(default=0, description="钻石")
-    gold: int = Field(default=0, description="金币")
-    energy: int = Field(default=100, description="体力")
+    # 等级信息
+    level: int = Field(default=1, ge=1, le=100, description="等级")
+    exp: int = Field(default=0, ge=0, description="经验值")
+    vip_level: int = Field(default=0, ge=0, le=15, description="VIP等级")
+    vip_exp: int = Field(default=0, ge=0, description="VIP经验")
     
-    # VIP信息
-    vip_level: VIPLevel = Field(default=VIPLevel.V0, description="VIP等级")
-    vip_exp: int = Field(default=0, description="VIP经验")
+    # 资源信息
+    diamond: int = Field(default=0, ge=0, description="钻石")
+    gold: int = Field(default=0, ge=0, description="金币")
+    energy: int = Field(default=100, ge=0, le=999, description="体力")
     
-    # 状态信息
-    last_login: Optional[str] = Field(default=None, description="最后登录时间")
-    online_status: bool = Field(default=False, description="在线状态")
-
-# For production use with MongoDB, create a separate Beanie Document
-try:
-    from .base_document import BaseDocument
+    # 背包信息（简化存储）
+    items: Dict[str, int] = Field(default_factory=dict, description="道具背包")
     
-    class PlayerDocument(BaseDocument):
-        """玩家数据库文档（用于生产环境）"""
-        
-        # 基础信息
-        player_id: str = Field(..., description="玩家ID")
-        nickname: str = Field(..., description="昵称")
-        level: int = Field(default=1, description="等级")
-        exp: int = Field(default=0, description="经验值")
-        
-        # 货币资源（支持并发操作的字段）
-        diamond: int = Field(default=0, description="钻石")
-        gold: int = Field(default=0, description="金币")
-        energy: int = Field(default=100, description="体力")
-        
-        # VIP信息
-        vip_level: VIPLevel = Field(default=VIPLevel.V0, description="VIP等级")
-        vip_exp: int = Field(default=0, description="VIP经验")
-        
-        # 状态信息
-        last_login: Optional[str] = Field(default=None, description="最后登录时间")
-        online_status: bool = Field(default=False, description="在线状态")
-        
-        class Settings:
-            collection = "players"
-            
-except ImportError:
-    # Fallback if Beanie is not available
-    PlayerDocument = Player
-
-def get_concurrent_fields(model_class) -> Dict[str, Dict[str, Any]]:
-    """
-    获取支持并发操作的字段配置
+    # 时间信息
+    last_login: datetime = Field(default_factory=datetime.utcnow, description="最后登录时间")
+    last_offline: Optional[datetime] = Field(default=None, description="最后离线时间")
     
-    Args:
-        model_class: 模型类
+    class Settings:
+        """MongoDB集合配置"""
+        name = "players"
         
-    Returns:
-        并发字段配置字典
-    """
-    if model_class == Player:
-        return {
+    class Meta:
+        """元数据配置"""
+        # 支持并发操作的字段
+        concurrent_fields = {
             "diamond": {
                 "type": "number",
                 "operations": ["incr", "decr"],
@@ -96,7 +51,7 @@ def get_concurrent_fields(model_class) -> Dict[str, Dict[str, Any]]:
                 "max": 999999999
             },
             "gold": {
-                "type": "number", 
+                "type": "number",
                 "operations": ["incr", "decr"],
                 "min": 0,
                 "max": 999999999
@@ -114,4 +69,14 @@ def get_concurrent_fields(model_class) -> Dict[str, Dict[str, Any]]:
                 "max": 999
             }
         }
-    return {}
+        
+        # 索引定义
+        indexes = [
+            "player_id",
+            "account_id",
+            [("level", -1), ("player_id", 1)],
+            [("vip_level", -1), ("player_id", 1)]
+        ]
+        
+        # 缓存配置
+        cache_ttl = 300  # 5分钟
