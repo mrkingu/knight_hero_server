@@ -53,7 +53,7 @@ async def test_10k_connections():
         
         # 分批创建连接以避免内存压力
         batch_size = 1000
-        for batch in range(0, 5000, batch_size):  # 测试5K连接
+        for batch in range(0, 10000, batch_size):  # 测试10K连接
             batch_connections = []
             for i in range(batch_size):
                 # 创建模拟WebSocket
