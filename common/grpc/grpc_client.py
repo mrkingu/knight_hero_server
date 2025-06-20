@@ -325,10 +325,13 @@ class GrpcClient:
         
         for attempt in range(self.max_retries + 1):
             try:
+                # 提取纯方法名（去掉服务名前缀）
+                pure_method_name = method_name.split('.')[-1] if '.' in method_name else method_name
+                
                 # 创建请求
                 request = service_pb2.RpcRequest(
                     service_name=service_name,
-                    method_name=method_name,
+                    method_name=pure_method_name,
                     payload=orjson.dumps(kwargs) if kwargs else b"",
                     metadata={}
                 )
@@ -455,6 +458,21 @@ class GrpcClient:
                 "retry_delay": self.retry_delay
             }
         }
+    
+    async def __aenter__(self):
+        """异步上下文管理器入口"""
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """异步上下文管理器退出"""
+        await self.close()
+        return False
+    
+    async def close(self):
+        """关闭客户端，清理资源"""
+        # gRPC客户端本身不需要特殊清理，连接池会自动管理
+        # 这里只是为了接口完整性
+        logger.debug(f"gRPC客户端关闭: {self.service_address}")
 
 
 # 便捷函数

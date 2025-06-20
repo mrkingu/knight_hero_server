@@ -312,6 +312,9 @@ class GameServiceServicer(service_pb2_grpc.GameServiceServicer):
         
         logger.debug(f"收到RPC调用: {service_name}.{method_name}")
         
+        # 初始化变量
+        service_info = None
+        
         try:
             # 执行拦截器 (请求前)
             for interceptor in self.interceptors:
@@ -320,15 +323,15 @@ class GameServiceServicer(service_pb2_grpc.GameServiceServicer):
                 else:
                     interceptor(request, context, "before")
             
+            # 查找服务实例（先获取以便错误处理使用）
+            service_info = _registry.get_service(service_name)
+            if not service_info or not service_info.instance:
+                raise ValueError(f"服务实例未找到: {service_name}")
+            
             # 查找方法
             method_info = _registry.get_method(service_name, method_name)
             if not method_info:
                 raise ValueError(f"未找到方法: {service_name}.{method_name}")
-            
-            # 查找服务实例
-            service_info = _registry.get_service(service_name)
-            if not service_info or not service_info.instance:
-                raise ValueError(f"服务实例未找到: {service_name}")
             
             # 更新服务统计
             service_info.total_requests += 1
@@ -384,7 +387,10 @@ class GameServiceServicer(service_pb2_grpc.GameServiceServicer):
             )
             
         except Exception as e:
-            service_info.error_requests += 1
+            # 安全地更新错误统计（如果service_info可用）
+            if service_info:
+                service_info.error_requests += 1
+            
             error_msg = f"RPC调用失败: {service_name}.{method_name} - {str(e)}"
             logger.error(error_msg)
             return service_pb2.RpcResponse(
@@ -419,16 +425,14 @@ class GameServiceServicer(service_pb2_grpc.GameServiceServicer):
 
 
 async def start_grpc_server(
-    address: str = "localhost",
-    port: int = 50051,
+    listen_addr: str = "localhost:50051",
     max_workers: int = 10
 ) -> grpc.aio.Server:
     """
     启动gRPC服务器
     
     Args:
-        address: 监听地址
-        port: 监听端口
+        listen_addr: 监听地址 (host:port格式，如 "localhost:50051")
         max_workers: 最大工作线程数
         
     Returns:
@@ -442,7 +446,6 @@ async def start_grpc_server(
     service_pb2_grpc.add_GameServiceServicer_to_server(servicer, server)
     
     # 监听地址
-    listen_addr = f"{address}:{port}"
     server.add_insecure_port(listen_addr)
     
     # 启动服务器
