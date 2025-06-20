@@ -390,9 +390,16 @@ class ConnectionManager:
                 
                 # 批量创建空闲连接
                 for _ in range(batch_size):
-                    # 创建空连接对象（无WebSocket）
-                    connection = Connection(None, self.conn_config)
+                    # 创建空连接对象（带有模拟WebSocket）
+                    from unittest.mock import Mock
+                    mock_websocket = Mock()
+                    mock_websocket.client = Mock()
+                    mock_websocket.client.host = "pre-allocated"
+                    mock_websocket.client.port = 0
+                    
+                    connection = Connection(mock_websocket, self.conn_config)
                     connection.state = ConnectionState.IDLE
+                    connection.websocket = None  # 清空WebSocket引用
                     self.idle_connections.append(connection)
                 
                 # 避免阻塞事件循环
