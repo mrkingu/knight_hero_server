@@ -361,8 +361,9 @@ class GatewayApp:
             })
             
         elif message.type == "chat":
-            # 处理聊天消息（示例）
-            await self._handle_chat_message(connection, session, message)
+            # 处理聊天消息 - 使用新的集成
+            from .chat_integration import handle_chat_message_from_gateway
+            await handle_chat_message_from_gateway(connection, session, message)
             
         else:
             # 其他消息类型
@@ -401,12 +402,17 @@ class GatewayApp:
             )
             
             if success:
+                # 认证成功后获取离线消息
+                from .chat_integration import get_offline_messages_for_player
+                offline_result = await get_offline_messages_for_player(connection, session)
+                
                 await connection.send_dict({
                     "type": "auth_response",
                     "success": True,
                     "session_id": str(session.id),
                     "user_id": user_id,
-                    "message": "认证成功"
+                    "message": "认证成功",
+                    "offline_messages": offline_result.get("data", {}) if offline_result.get("success") else None
                 })
                 print(f"用户 {user_id} 认证成功, 会话: {session.id}")
             else:
