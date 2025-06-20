@@ -356,7 +356,7 @@ class ConfigClassGenerator:
             
             # 写入文件
             with open(output_file, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(lines))
+                f.write(os.linesep.join(lines))
                 
             logger.info(f"成功生成配置文件: {output_file}")
             return True
