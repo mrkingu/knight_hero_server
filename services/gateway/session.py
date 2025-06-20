@@ -136,7 +136,6 @@ class Session:
                 
                 # 更新状态
                 self.state = SessionState.AUTHENTICATED
-                self.update_activity()
                 
                 # 更新其他属性
                 for key, value in kwargs.items():
