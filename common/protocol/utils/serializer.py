@@ -5,7 +5,7 @@
 """
 import msgpack
 import json
-from typing import Any, Dict, bytes
+from typing import Any, Dict
 
 def serialize_msgpack(data: Any) -> bytes:
     """使用msgpack序列化"""

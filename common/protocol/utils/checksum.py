@@ -5,7 +5,6 @@
 """
 import hashlib
 import zlib
-from typing import bytes
 
 def crc32_checksum(data: bytes) -> int:
     """计算CRC32校验和"""
