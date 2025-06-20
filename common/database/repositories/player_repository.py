@@ -7,7 +7,7 @@
 from typing import Dict, Any, Optional
 from ..repository.base_repository import BaseRepository
 from ..concurrent.operation_type import OperationType
-from ..models.player_model import Player, get_concurrent_fields
+from ..models.player_model import PlayerModel
 
 class PlayerRepository(BaseRepository):
     """玩家数据仓库"""
@@ -17,7 +17,8 @@ class PlayerRepository(BaseRepository):
         
     def get_concurrent_fields(self) -> Dict[str, Dict[str, Any]]:
         """定义支持并发操作的字段"""
-        return get_concurrent_fields(Player)
+        meta = getattr(PlayerModel, 'Meta', None)
+        return getattr(meta, 'concurrent_fields', {}) if meta else {}
         
     async def add_diamond(
         self,

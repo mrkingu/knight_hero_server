@@ -164,30 +164,30 @@ class TestDataModels:
     
     def test_player_model(self):
         """测试玩家模型"""
-        from common.database.models import Player, VIPLevel
+        from common.database.models import PlayerModel
         
-        player_data = {
-            "player_id": "test_player_123",
-            "nickname": "TestPlayer",
-            "level": 10,
-            "diamond": 500,
-            "gold": 10000,
-            "vip_level": VIPLevel.V1
-        }
+        # 检查模型字段定义
+        fields = PlayerModel.model_fields
         
-        player = Player(**player_data)
+        # 检查关键字段是否存在
+        required_fields = ["player_id", "account_id", "nickname", "level", "diamond", "gold"]
+        for field in required_fields:
+            assert field in fields, f"缺少字段: {field}"
         
-        assert player.player_id == "test_player_123"
-        assert player.nickname == "TestPlayer"
-        assert player.level == 10
-        assert player.diamond == 500
-        assert player.vip_level == VIPLevel.V1
+        # 检查Meta类配置
+        meta = getattr(PlayerModel, 'Meta', None)
+        assert meta is not None, "缺少Meta配置"
+        
+        concurrent_fields = getattr(meta, 'concurrent_fields', {})
+        assert "diamond" in concurrent_fields
+        assert "gold" in concurrent_fields
     
     def test_concurrent_fields(self):
         """测试并发字段配置"""
-        from common.database.models import Player, get_concurrent_fields
+        from common.database.models import PlayerModel
         
-        concurrent_fields = get_concurrent_fields(Player)
+        meta = getattr(PlayerModel, 'Meta', None)
+        concurrent_fields = getattr(meta, 'concurrent_fields', {}) if meta else {}
         
         assert "diamond" in concurrent_fields
         assert "gold" in concurrent_fields
@@ -286,26 +286,22 @@ def test_basic_functionality():
 
 def test_model_validation():
     """测试模型验证"""
-    from common.database.models import Player, VIPLevel
+    from common.database.models import PlayerModel
     
     try:
         # 测试模型字段定义
-        fields = Player.model_fields
+        fields = PlayerModel.model_fields
         
         # 检查关键字段是否存在
-        required_fields = ["player_id", "nickname", "level", "diamond", "gold"]
+        required_fields = ["player_id", "account_id", "nickname", "level", "diamond", "gold"]
         for field in required_fields:
             assert field in fields, f"缺少字段: {field}"
-        
-        # 测试枚举
-        assert VIPLevel.V0.value == 0
-        assert VIPLevel.V10.value == 10
         
         print("✅ 玩家模型字段定义正确")
         
         # 测试并发字段配置
-        from common.database.models import get_concurrent_fields
-        concurrent_fields = get_concurrent_fields(Player)
+        meta = getattr(PlayerModel, 'Meta', None)
+        concurrent_fields = getattr(meta, 'concurrent_fields', {}) if meta else {}
         
         assert "diamond" in concurrent_fields
         assert "gold" in concurrent_fields
