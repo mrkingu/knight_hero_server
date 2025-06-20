@@ -31,6 +31,12 @@ aiohttp = "^3.12.13"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
+black = "^23.0.0"
+isort = "^5.12.0"
+pylint = "^3.0.0"
+mypy = "^1.7.0"
+flake8 = "^6.0.0"
+pre-commit = "^3.5.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -40,15 +46,123 @@ build-backend = "poetry.core.masonry.api"
 # pytest 配置
 asyncio_mode = "auto"
 testpaths = ["test"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
 
 [tool.black]
 # black 代码格式化配置
-line-length = 88
+line-length = 100
 target-version = ['py312']
 include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
 
 [tool.isort]
 # isort 导入排序配置
 profile = "black"
 multi_line_output = 3
-line_length = 88
+line_length = 100
+known_first_party = ["common", "services", "launcher"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+force_alphabetical_sort_within_sections = true
+
+[tool.pylint]
+# pylint 代码检查配置
+max-line-length = 100
+disable = [
+    "C0111",  # missing-docstring
+    "R0903",  # too-few-public-methods
+    "R0913",  # too-many-arguments
+    "W0613",  # unused-argument
+    "C0103",  # invalid-name
+]
+good-names = ["i", "j", "k", "ex", "Run", "_", "id", "db"]
+extension-pkg-whitelist = ["pydantic"]
+
+[tool.mypy]
+# mypy 类型检查配置
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+exclude = [
+    "test/",
+    "build/",
+    "dist/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "motor.*",
+    "redis.*",
+    "grpcio.*",
+    "uvloop.*",
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+# flake8 代码风格检查配置
+max-line-length = 100
+extend-ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+[tool.coverage.run]
+# 代码覆盖率配置
+source = ["common", "services", "launcher"]
+omit = [
+    "*/test*",
+    "*/tests/*",
+    "*/__init__.py",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+# 覆盖率报告配置
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+show_missing = true
+precision = 2
