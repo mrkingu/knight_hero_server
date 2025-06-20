@@ -275,19 +275,21 @@ class ServiceContainer:
         拓扑排序算法
         
         Args:
-            graph: 依赖关系图
+            graph: 依赖关系图，格式：{service: [dependencies]}
             
         Returns:
             排序后的服务列表
         """
-        # 计算入度
+        # 计算入度 - service A depends on service B means B -> A (B has outgoing edge to A)
         in_degree = {node: 0 for node in graph}
-        for node in graph:
-            for dependency in graph[node]:
-                if dependency in in_degree:
-                    in_degree[dependency] += 1
         
-        # 找到所有入度为0的节点
+        # 构建正确的入度计算：如果A依赖B，那么A的入度+1
+        for service, dependencies in graph.items():
+            for dependency in dependencies:
+                if dependency in in_degree:
+                    in_degree[service] += 1  # service依赖dependency，所以service的入度+1
+        
+        # 找到所有入度为0的节点（没有依赖的节点）
         queue = [node for node, degree in in_degree.items() if degree == 0]
         result = []
         
@@ -296,12 +298,12 @@ class ServiceContainer:
             current = queue.pop(0)
             result.append(current)
             
-            # 更新其依赖节点的入度
-            for dependency in graph.get(current, []):
-                if dependency in in_degree:
-                    in_degree[dependency] -= 1
-                    if in_degree[dependency] == 0:
-                        queue.append(dependency)
+            # 更新依赖于当前节点的其他节点的入度
+            for service, dependencies in graph.items():
+                if current in dependencies and service not in result:
+                    in_degree[service] -= 1
+                    if in_degree[service] == 0:
+                        queue.append(service)
         
         # 检查是否有循环依赖
         if len(result) != len(graph):
