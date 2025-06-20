@@ -70,12 +70,7 @@ class JSONFormatter(logging.Formatter):
         # 添加额外的记录属性
         extra_fields = {}
         for key, value in record.__dict__.items():
-            if key not in {
-                "name", "msg", "args", "levelname", "levelno", "pathname", "filename",
-                "module", "lineno", "funcName", "created", "msecs", "relativeCreated",
-                "thread", "threadName", "processName", "process", "getMessage", "exc_info",
-                "exc_text", "stack_info", "taskName"
-            }:
+            if key not in EXCLUDED_RECORD_ATTRIBUTES:
                 extra_fields[key] = value
         
         if extra_fields:
