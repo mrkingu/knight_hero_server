@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, field
 from enum import Enum
 import grpc
-from grpc_health.v1 import health_pb2, health_pb2_grpc
+# 简化健康检查，暂时不使用grpc_health
 
 
 logger = logging.getLogger(__name__)
@@ -229,18 +229,19 @@ class GrpcConnectionPool:
             
             for channel_info in pool:
                 try:
-                    # 使用gRPC健康检查
-                    health_stub = health_pb2_grpc.HealthStub(channel_info.channel)
+                    # 简化健康检查：使用Channel的连接状态
+                    state = channel_info.channel.get_state(try_to_connect=False)
                     
-                    # 发送健康检查请求
-                    request = health_pb2.HealthCheckRequest()
-                    response = await asyncio.wait_for(
-                        health_stub.Check(request),
-                        timeout=3.0
-                    )
-                    
-                    # 检查响应状态
-                    if response.status == health_pb2.HealthCheckResponse.SERVING:
+                    # 检查连接状态
+                    if state == grpc.ChannelConnectivity.READY:
+                        channel_info.state = ChannelState.READY
+                        channel_info.failure_count = 0
+                    elif state == grpc.ChannelConnectivity.IDLE:
+                        # 尝试连接
+                        await asyncio.wait_for(
+                            channel_info.channel.channel_ready(),
+                            timeout=3.0
+                        )
                         channel_info.state = ChannelState.READY
                         channel_info.failure_count = 0
                     else:
