@@ -1,0 +1,36 @@
+// 基础消息结构定义
+// Base Message Structure Definition
+//
+// 作者: lx
+// 日期: 2025-06-18
+// 描述: 定义游戏服务器通信的基础Protocol Buffer消息结构
+
+syntax = "proto3";
+package game.protocol;
+
+// 消息头
+// Message header containing metadata for all communications
+message Header {
+  uint32 length = 1;     // 消息长度 (Message length)
+  uint32 msg_id = 2;     // 消息ID (Message ID)
+  uint32 sequence = 3;   // 序列号 (Sequence number)
+  uint32 checksum = 4;   // 校验和 (Checksum for data integrity)
+}
+
+// 基础请求消息
+// Base request message structure for all client requests
+message BaseRequest {
+  Header header = 1;       // 消息头 (Message header)
+  string player_id = 2;    // 玩家ID (Player identifier)
+  int64 timestamp = 3;     // 时间戳 (Request timestamp)
+  bytes payload = 4;       // 有效负载 (Serialized payload data)
+}
+
+// 基础响应消息
+// Base response message structure for all server responses
+message BaseResponse {
+  Header header = 1;       // 消息头 (Message header)
+  int32 code = 2;          // 响应码 (Response code: 0=success, others=error)
+  string message = 3;      // 响应消息 (Response message/error description)
+  bytes payload = 4;       // 有效负载 (Serialized response data)
+}
