@@ -302,7 +302,7 @@ class ConfigClassGenerator:
             lines.append(f'        self.{config_name}_config.clear()')
             
         lines.append('')
-        return '\n'.join(lines)
+        return os.linesep.join(lines)
         
     def generate_config_file(self, structures: List[Dict[str, Any]], output_file: Path) -> bool:
         """生成配置文件
