@@ -102,7 +102,7 @@ class BaseHandler(BaseService, ABC, Generic[T, R]):
         except Exception as e:
             self._error_count += 1
             self.logger.error(f"Unexpected error: {e}", exc_info=True)
-            return self.error_response(code=-999, message="Internal server error")
+            return self.error_response(code=ErrorCode.SERVER_ERROR, message="Internal server error")
     
     @abstractmethod
     async def validate(self, request: T) -> T:
