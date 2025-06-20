@@ -280,6 +280,7 @@ async def performance_monitoring_example():
     handler = BattleHandler()
     
     # 执行一些战斗
+    battle_tasks = []
     for i in range(10):
         request = BattleRequest(
             battle_id=f"perf_test_{i}",
