@@ -6,7 +6,6 @@ Repository管理器
 """
 import inspect
 from typing import Dict, Any, Optional, Type
-from .player_repository import PlayerRepository
 
 class RepositoryManager:
     """Repository管理器 - 单例模式，控制访问权限"""
@@ -87,6 +86,8 @@ class RepositoryManager:
         if name not in self._repositories:
             if name == "players" or name == "player":
                 if self.redis_client and self.mongo_client:
+                    # 延迟导入避免循环依赖
+                    from ..repositories.player_repository import PlayerRepository
                     self._repositories[name] = PlayerRepository(
                         self.redis_client, 
                         self.mongo_client
