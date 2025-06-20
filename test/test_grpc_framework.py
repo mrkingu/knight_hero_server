@@ -65,21 +65,15 @@ class TestGrpcFramework:
         register_service_instance("test_service", service_instance)
         
         # 启动服务器
-        server_task = asyncio.create_task(
-            start_grpc_server("localhost:50052")
-        )
+        server = await start_grpc_server("localhost:50052")
         
         # 等待服务器启动
         await asyncio.sleep(0.5)
         
-        yield server_task
+        yield server
         
-        # 清理：取消服务器任务
-        server_task.cancel()
-        try:
-            await server_task
-        except asyncio.CancelledError:
-            pass
+        # 清理：停止服务器
+        await server.stop(grace=1)
     
     @pytest.mark.asyncio
     async def test_service_decorator(self):
