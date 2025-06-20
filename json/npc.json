@@ -1,0 +1,40 @@
+{
+  "3001": {
+    "npc_id": 3001,
+    "name": "哥布林",
+    "level": 5,
+    "hp": 500,
+    "attack": 80,
+    "defense": 20,
+    "drop_items": [
+      1001,
+      1002
+    ],
+    "ai_type": "aggressive"
+  },
+  "3002": {
+    "npc_id": 3002,
+    "name": "兽人战士",
+    "level": 15,
+    "hp": 2000,
+    "attack": 200,
+    "defense": 100,
+    "drop_items": [
+      1002,
+      1003
+    ],
+    "ai_type": "defensive"
+  },
+  "3003": {
+    "npc_id": 3003,
+    "name": "巨龙",
+    "level": 50,
+    "hp": 10000,
+    "attack": 800,
+    "defense": 300,
+    "drop_items": [
+      1003
+    ],
+    "ai_type": "boss"
+  }
+}
