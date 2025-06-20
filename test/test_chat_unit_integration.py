@@ -177,7 +177,7 @@ async def test_performance_simulation():
         
         elapsed = time.time() - start_time
         print(f"处理1000条消息耗时: {elapsed:.3f}秒")
-        print(f"平均每条消息: {elapsed * 1000:.3f}毫秒")
+        print(f"平均每条消息: {(elapsed / len(messages)) * 1000:.3f}毫秒")
         
         assert elapsed < 5.0  # 应该在5秒内完成
         
