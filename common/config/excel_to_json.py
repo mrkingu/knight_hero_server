@@ -159,7 +159,7 @@ class ExcelToJsonConverter:
                     parsed = json.loads(value)
                     if isinstance(parsed, list):
                         return parsed
-                except:
+                except json.JSONDecodeError:
                     pass
                 # 按逗号分割
                 return [item.strip() for item in value.split(',') if item.strip()]
