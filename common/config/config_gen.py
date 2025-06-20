@@ -464,26 +464,3 @@ __all__ = [
         }
 
 
-if __name__ == "__main__":
-    # 配置日志
-    logging.basicConfig(level=logging.INFO)
-    
-    # 创建生成器
-    generator = ConfigClassGenerator()
-    
-    # 生成配置类
-    results = generator.generate_all_configs()
-    
-    # 输出结果
-    print("生成结果:")
-    for filename, success in results.items():
-        status = "成功" if success else "失败"
-        print(f"  {filename}: {status}")
-        
-    # 输出生成信息
-    info = generator.get_generation_info()
-    print(f"\\n生成信息:")
-    print(f"  JSON目录: {info['json_dir']}")
-    print(f"  输出目录: {info['output_dir']}")
-    print(f"  JSON文件数: {info['json_files_count']}")
-    print(f"  输出文件数: {info['output_files_count']}")

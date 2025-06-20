@@ -4,7 +4,7 @@
 日期: 2025-06-18
 """
 import zlib
-from typing import bytes, Optional
+from typing import Optional
 
 def compress_data(data: bytes, level: int = 6) -> bytes:
     """压缩数据"""

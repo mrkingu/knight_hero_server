@@ -356,29 +356,3 @@ def create_sample_excel_files(excel_dir: str = "excel"):
     logger.info(f"创建示例Excel文件: {item_file}")
 
 
-if __name__ == "__main__":
-    # 配置日志
-    logging.basicConfig(level=logging.INFO)
-    
-    # 创建转换器
-    converter = ExcelToJsonConverter()
-    
-    # 创建示例文件
-    create_sample_excel_files()
-    
-    # 执行批量转换
-    results = converter.batch_convert()
-    
-    # 输出结果
-    print("转换结果:")
-    for filename, success in results.items():
-        status = "成功" if success else "失败"
-        print(f"  {filename}: {status}")
-        
-    # 输出转换信息
-    info = converter.get_conversion_info()
-    print(f"\n转换信息:")
-    print(f"  Excel目录: {info['excel_dir']}")
-    print(f"  JSON目录: {info['json_dir']}")
-    print(f"  Excel文件数: {info['excel_files_count']}")
-    print(f"  JSON文件数: {info['json_files_count']}")

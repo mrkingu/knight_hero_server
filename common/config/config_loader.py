@@ -476,33 +476,3 @@ async def initialize_configs(config_dir: str = "json", auto_reload: bool = False
     return await config_loader.load_all_configs()
 
 
-if __name__ == "__main__":
-    # 配置日志
-    logging.basicConfig(level=logging.INFO)
-    
-    async def main():
-        """主函数"""
-        # 初始化配置
-        success = await initialize_configs(auto_reload=True)
-        
-        if success:
-            print("配置初始化成功")
-            
-            # 获取加载器信息
-            info = config_loader.get_loader_info()
-            print(f"加载器信息: {info}")
-            
-            # 获取配置管理器
-            manager = get_config_manager()
-            stats = manager.get_config_count()
-            print(f"配置统计: {stats}")
-            
-            # 模拟运行一段时间（用于测试热更新）
-            print("运行中...（可以修改配置文件测试热更新）")
-            await asyncio.sleep(30)
-            
-        else:
-            print("配置初始化失败")
-    
-    # 运行主函数
-    asyncio.run(main())
