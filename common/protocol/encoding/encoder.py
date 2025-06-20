@@ -79,7 +79,7 @@ class MessageEncoder:
             self._buffer = bytearray(total_size * 2)
         
         # 写入头部
-        struct.pack_into("!IHB", self._buffer, 0, len(body), msg_type, flags)
+        struct.pack_into("!Ihb", self._buffer, 0, len(body), msg_type, flags)
         
         # 写入消息体
         self._buffer[header_size:header_size + len(body)] = body

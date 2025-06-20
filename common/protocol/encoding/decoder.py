@@ -48,7 +48,7 @@ class MessageDecoder:
             
         # 解析头部
         msg_len, msg_type, flags = struct.unpack_from(
-            "!IHB", self._buffer, self._buffer_pos
+            "!Ihb", self._buffer, self._buffer_pos
         )
         
         # 检查是否有完整的消息
