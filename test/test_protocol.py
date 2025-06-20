@@ -36,7 +36,7 @@ class TestBaseMessage:
         assert request.player_id == "player123"
         assert request.payload == b"test_data"
         assert request.msg_id == 1001
-        assert request.sequence > 0
+        assert len(request.sequence) > 0  # UUID string length check
         assert request.timestamp > 0
     
     def test_base_response_creation(self):
@@ -84,21 +84,21 @@ class TestBaseMessage:
     
     def test_success_response(self):
         """测试成功响应创建"""
-        response = BaseResponse.success(payload=b"success_data", request_sequence=123, msg_id=1003)
+        response = BaseResponse.success(payload=b"success_data", request_sequence="123", msg_id=1003)
         
         assert response.code == 0
         assert response.message == "Success"
         assert response.payload == b"success_data"
-        assert response.sequence == 123
+        assert response.sequence == "123"
         assert response.msg_id == 1003
     
     def test_error_response(self):
         """测试错误响应创建"""
-        response = BaseResponse.error(code=400, message="Bad Request", request_sequence=124, msg_id=1004)
+        response = BaseResponse.error(code=400, message="Bad Request", request_sequence="124", msg_id=1004)
         
         assert response.code == 400
         assert response.message == "Bad Request"
-        assert response.sequence == 124
+        assert response.sequence == "124"
         assert response.msg_id == 1004
     
     @pytest.mark.asyncio

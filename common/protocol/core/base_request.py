@@ -15,7 +15,7 @@ class BaseRequest:
     
     def __init__(self, player_id: Optional[str] = None, payload: Optional[bytes] = None, msg_id: Optional[int] = None):
         # 消息头
-        self.sequence: int = int(uuid.uuid4().int & 0xFFFFFFFF)  # 序列号
+        self.sequence: str = str(uuid.uuid4())  # 序列号
         self.timestamp: int = int(datetime.now().timestamp() * 1000)  # 时间戳(毫秒)
         self.player_id: Optional[str] = player_id  # 玩家ID
         
@@ -55,7 +55,7 @@ class BaseRequest:
         
     def from_dict(self, data: Dict[str, Any]) -> "BaseRequest":
         """从字典创建"""
-        self.sequence = data.get("sequence", int(uuid.uuid4().int & 0xFFFFFFFF))
+        self.sequence = data.get("sequence", str(uuid.uuid4()))
         self.timestamp = data.get("timestamp", int(datetime.now().timestamp() * 1000))
         self.player_id = data.get("player_id")
         self.payload = data.get("payload")

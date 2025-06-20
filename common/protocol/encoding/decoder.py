@@ -5,7 +5,7 @@
 日期: 2025-06-18
 """
 import struct
-from typing import Optional, List, Any
+from typing import Optional, List, Tuple, Any
 import msgpack
 from ..core.decorators import MESSAGE_REGISTRY
 
@@ -48,7 +48,7 @@ class MessageDecoder:
             
         # 解析头部
         msg_len, msg_type, flags = struct.unpack_from(
-            "!Ihb", self._buffer, self._buffer_pos
+            "!IHB", self._buffer, self._buffer_pos
         )
         
         # 检查是否有完整的消息
@@ -59,7 +59,7 @@ class MessageDecoder:
         # 提取消息体
         body_start = self._buffer_pos + 7
         body_end = body_start + msg_len
-        body = bytes(self._buffer[body_start:body_end])  # Convert to bytes
+        body = bytes(self._buffer[body_start:body_end])
         
         # 更新位置
         self._buffer_pos += total_len
@@ -67,32 +67,31 @@ class MessageDecoder:
         # 解密
         if flags & 0x02:
             if hasattr(self, '_cipher'):
-                # Use the specific cipher instance
                 body = self._cipher.decrypt(body)
             else:
-                # Use default cipher
-                try:
-                    from ..crypto.aes_cipher import AESCipher
-                    cipher = AESCipher()
-                    body = cipher.decrypt(body)
-                except ImportError:
-                    pass  # 没有加密模块则跳过解密
+                from ..crypto.aes_cipher import AESCipher
+                cipher = AESCipher()
+                body = cipher.decrypt(body)
             
         # 解压缩
         if flags & 0x01:
-            try:
-                import lz4.frame
-                body = lz4.frame.decompress(body)
-            except ImportError:
-                pass  # 没有lz4库则跳过解压缩
+            import lz4.frame
+            body = lz4.frame.decompress(body)
             
         # 查找消息类
         msg_class = MESSAGE_REGISTRY.get(msg_type)
         if not msg_class:
-            # 创建一个通用的消息对象
+            # If not registered, create a generic BaseRequest/BaseResponse
             from ..core.base_request import BaseRequest
-            message = BaseRequest()
-            message.msg_id = msg_type
+            from ..core.base_response import BaseResponse
+            from ..core.message_type import MessageType
+            
+            # Choose appropriate base class based on message type
+            if MessageType.is_response(msg_type):
+                message = BaseResponse()
+            else:
+                message = BaseRequest()
+            message.MESSAGE_TYPE = msg_type
         else:
             message = msg_class()
             
@@ -102,18 +101,8 @@ class MessageDecoder:
             message.ParseFromString(body)
         else:
             # msgpack消息
-            try:
-                data = msgpack.unpackb(body, raw=False)
-                if hasattr(message, 'from_dict'):
-                    message.from_dict(data)
-                else:
-                    for key, value in data.items():
-                        if hasattr(message, key):
-                            setattr(message, key, value)
-            except Exception:
-                # 如果解码失败，至少设置基本信息
-                message.msg_id = msg_type
-                message.payload = body
+            data = msgpack.unpackb(body, raw=False)
+            message.from_dict(data)
             
         return message
         

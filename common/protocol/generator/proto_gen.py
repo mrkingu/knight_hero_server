@@ -107,7 +107,7 @@ class ProtoGenerator:
             # 添加基类字段
             if msg_info["base_class"] == "BaseRequest":
                 lines.extend([
-                    "  int32 sequence = 1;",
+                    "  string sequence = 1;",
                     "  int64 timestamp = 2;",
                     "  string player_id = 3;",
                     "  map<string, string> metadata = 4;",
@@ -117,7 +117,7 @@ class ProtoGenerator:
                 lines.extend([
                     "  int32 code = 1;",
                     "  string message = 2;",
-                    "  int32 sequence = 3;",
+                    "  string sequence = 3;",
                     "  int64 timestamp = 4;",
                     "  google.protobuf.Any data = 5;",
                 ])

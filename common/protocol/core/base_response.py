@@ -18,7 +18,7 @@ class BaseResponse:
         self.message: str = message  # 响应消息
         
         # 响应头
-        self.sequence: Optional[int] = None  # 对应请求的序列号
+        self.sequence: Optional[str] = None  # 对应请求的序列号
         self.timestamp: int = int(datetime.now().timestamp() * 1000)  # 时间戳(毫秒)
         
         # 消息内容 - 兼容测试接口
@@ -29,7 +29,7 @@ class BaseResponse:
         self.data: Optional[Dict[str, Any]] = None
         
     @classmethod
-    def success(cls, payload: Optional[bytes] = None, request_sequence: Optional[int] = None, msg_id: Optional[int] = None) -> "BaseResponse":
+    def success(cls, payload: Optional[bytes] = None, request_sequence: Optional[str] = None, msg_id: Optional[int] = None) -> "BaseResponse":
         """创建成功响应"""
         response = cls(code=0, message="Success", payload=payload, msg_id=msg_id)
         if request_sequence is not None:
@@ -37,7 +37,7 @@ class BaseResponse:
         return response
         
     @classmethod
-    def error(cls, code: int, message: str, request_sequence: Optional[int] = None, msg_id: Optional[int] = None) -> "BaseResponse":
+    def error(cls, code: int, message: str, request_sequence: Optional[str] = None, msg_id: Optional[int] = None) -> "BaseResponse":
         """创建错误响应"""
         response = cls(code=code, message=message, msg_id=msg_id)
         if request_sequence is not None:
