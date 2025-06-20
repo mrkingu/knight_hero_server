@@ -59,19 +59,24 @@ class MessageDecoder:
         # 提取消息体
         body_start = self._buffer_pos + 7
         body_end = body_start + msg_len
-        body = self._buffer[body_start:body_end]
+        body = bytes(self._buffer[body_start:body_end])  # Convert to bytes
         
         # 更新位置
         self._buffer_pos += total_len
         
         # 解密
         if flags & 0x02:
-            try:
-                from ..crypto.aes_cipher import AESCipher
-                cipher = AESCipher()
-                body = cipher.decrypt(body)
-            except ImportError:
-                pass  # 没有加密模块则跳过解密
+            if hasattr(self, '_cipher'):
+                # Use the specific cipher instance
+                body = self._cipher.decrypt(body)
+            else:
+                # Use default cipher
+                try:
+                    from ..crypto.aes_cipher import AESCipher
+                    cipher = AESCipher()
+                    body = cipher.decrypt(body)
+                except ImportError:
+                    pass  # 没有加密模块则跳过解密
             
         # 解压缩
         if flags & 0x01:

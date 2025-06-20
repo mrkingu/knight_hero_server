@@ -92,11 +92,13 @@ class BufferPool:
             
         with self._lock:
             if len(self._pool) < self.max_size:
-                # 清空缓冲区
-                buffer[:] = b''
+                # 不要清空缓冲区内容，只重置长度但保持容量
+                # 重置缓冲区但保持原有长度信息 
+                original_size = len(buffer)
+                buffer[:] = b'\x00' * original_size  # 用0填充，保持大小信息
                 self._pool.append(buffer)
-                # 按大小排序，小的在前面
-                self._pool.sort(key=len)
+                # 按大小排序，大的在前面（这样可以优先匹配大的缓冲区）
+                self._pool.sort(key=len, reverse=True)
 
 # 全局对象池实例
 _request_pool = MessagePool(dict, max_size=100)

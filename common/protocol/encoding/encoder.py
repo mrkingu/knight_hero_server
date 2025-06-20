@@ -56,13 +56,19 @@ class MessageEncoder:
             
         # 加密
         if self.use_encryption:
-            try:
-                from ..crypto.aes_cipher import AESCipher
-                cipher = AESCipher()
-                body = cipher.encrypt(body)
+            if hasattr(self, '_cipher'):
+                # Use the specific cipher instance
+                body = self._cipher.encrypt(body)
                 flags |= 0x02
-            except ImportError:
-                pass  # 没有加密模块则跳过加密
+            else:
+                # Use default cipher
+                try:
+                    from ..crypto.aes_cipher import AESCipher
+                    cipher = AESCipher()
+                    body = cipher.encrypt(body)
+                    flags |= 0x02
+                except ImportError:
+                    pass  # 没有加密模块则跳过加密
             
         # 构建消息
         header_size = 7  # 4 + 2 + 1
