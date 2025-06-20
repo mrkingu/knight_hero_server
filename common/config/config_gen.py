@@ -201,7 +201,7 @@ class ConfigClassGenerator:
                 lines.append(f'    {field_name}: {field_type} = Field(description="{field_desc}")')
                 
         lines.append('')
-        return '\\n'.join(lines)
+        return '\n'.join(lines)
         
     def _to_pascal_case(self, snake_str: str) -> str:
         """将下划线命名转换为帕斯卡命名
@@ -302,7 +302,7 @@ class ConfigClassGenerator:
             lines.append(f'        self.{config_name}_config.clear()')
             
         lines.append('')
-        return '\\n'.join(lines)
+        return '\n'.join(lines)
         
     def generate_config_file(self, structures: List[Dict[str, Any]], output_file: Path) -> bool:
         """生成配置文件
@@ -356,7 +356,7 @@ class ConfigClassGenerator:
             
             # 写入文件
             with open(output_file, 'w', encoding='utf-8') as f:
-                f.write('\\n'.join(lines))
+                f.write('\n'.join(lines))
                 
             logger.info(f"成功生成配置文件: {output_file}")
             return True
