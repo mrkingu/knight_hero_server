@@ -28,20 +28,6 @@ MANIFEST
 *.manifest
 *.spec
 
-# 单元测试/覆盖率报告
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
 # 环境变量
 .env
 .venv
