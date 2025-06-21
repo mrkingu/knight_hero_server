@@ -77,18 +77,18 @@ class DebugTracer:
                 with self._lock:
                     self._call_stack.append(call_info)
                 
-                print(f"[TRACE] {'  ' * len(self._call_stack)}→ Calling {func_name}")
+                logger.debug(f"{'  ' * len(self._call_stack)}→ Calling {func_name}")
                 if include_args:
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Args: {args}")
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Kwargs: {kwargs}")
+                    logger.debug(f"{'  ' * len(self._call_stack)}  Args: {args}")
+                    logger.debug(f"{'  ' * len(self._call_stack)}  Kwargs: {kwargs}")
                 
                 try:
                     result = await func(*args, **kwargs)
                     elapsed = time.time() - start_time
                     
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}← {func_name} completed in {elapsed:.3f}s")
+                    logger.debug(f"{'  ' * len(self._call_stack)}← {func_name} completed in {elapsed:.3f}s")
                     if include_result:
-                        print(f"[TRACE] {'  ' * len(self._call_stack)}  Result: {result}")
+                        logger.debug(f"{'  ' * len(self._call_stack)}  Result: {result}")
                     
                     # 记录成功调用
                     call_info.update({
@@ -107,9 +107,9 @@ class DebugTracer:
                 except Exception as e:
                     elapsed = time.time() - start_time
                     
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}✗ {func_name} failed after {elapsed:.3f}s")
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Error: {e}")
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Traceback: {traceback.format_exc()}")
+                    logger.error(f"{'  ' * len(self._call_stack)}✗ {func_name} failed after {elapsed:.3f}s")
+                    logger.error(f"{'  ' * len(self._call_stack)}  Error: {e}")
+                    logger.debug(f"{'  ' * len(self._call_stack)}  Traceback: {traceback.format_exc()}")
                     
                     # 记录失败调用
                     call_info.update({
@@ -148,18 +148,18 @@ class DebugTracer:
                 with self._lock:
                     self._call_stack.append(call_info)
                 
-                print(f"[TRACE] {'  ' * len(self._call_stack)}→ Calling {func_name}")
+                logger.debug(f"{'  ' * len(self._call_stack)}→ Calling {func_name}")
                 if include_args:
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Args: {args}")
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Kwargs: {kwargs}")
+                    logger.debug(f"{'  ' * len(self._call_stack)}  Args: {args}")
+                    logger.debug(f"{'  ' * len(self._call_stack)}  Kwargs: {kwargs}")
                 
                 try:
                     result = func(*args, **kwargs)
                     elapsed = time.time() - start_time
                     
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}← {func_name} completed in {elapsed:.3f}s")
+                    logger.debug(f"{'  ' * len(self._call_stack)}← {func_name} completed in {elapsed:.3f}s")
                     if include_result:
-                        print(f"[TRACE] {'  ' * len(self._call_stack)}  Result: {result}")
+                        logger.debug(f"{'  ' * len(self._call_stack)}  Result: {result}")
                     
                     call_info.update({
                         "end_time": time.time(),
@@ -177,8 +177,8 @@ class DebugTracer:
                 except Exception as e:
                     elapsed = time.time() - start_time
                     
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}✗ {func_name} failed after {elapsed:.3f}s")
-                    print(f"[TRACE] {'  ' * len(self._call_stack)}  Error: {e}")
+                    logger.error(f"{'  ' * len(self._call_stack)}✗ {func_name} failed after {elapsed:.3f}s")
+                    logger.error(f"{'  ' * len(self._call_stack)}  Error: {e}")
                     
                     call_info.update({
                         "end_time": time.time(),
